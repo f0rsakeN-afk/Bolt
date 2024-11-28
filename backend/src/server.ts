@@ -6,7 +6,7 @@ import cors from "cors";
 import { TextBlock } from "@anthropic-ai/sdk/resources";
 import { nodeBasePrompt } from "./defaults/node";
 import { reactBasePrompt } from "./defaults/react";
-import { BASE_PROMPT } from "./prompts";
+import { BASE_PROMPT, getSystemPrompt } from "./prompts";
 
 const anthropic = new Anthropic();
 const app = express();
@@ -47,6 +47,22 @@ app.post("/template", async (req, res) => {
 
   res.status(403).json({
     message: "You can't access this",
+  });
+});
+
+app.post("/chat", async (req, res) => {
+  const messages = req.body.messages;
+  const response = await anthropic.messages.create({
+    messages: messages,
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 6000,
+    system: getSystemPrompt(),
+  });
+
+  console.log(response);
+
+  res.json({
+    response: (response.content[0] as TextBlock)?.text,
   });
 });
 
